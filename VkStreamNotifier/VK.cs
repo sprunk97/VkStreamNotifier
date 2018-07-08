@@ -18,6 +18,9 @@ namespace VkStreamNotifier
         public VK() { }
         public VK(Settings settings) => this.settings = settings;
 
+        /// <summary>
+        /// Authorizing VK api and invokes sending messages
+        /// </summary>
         public async void Connect()
         {
             await api.AuthorizeAsync(new ApiAuthParams
@@ -31,6 +34,10 @@ namespace VkStreamNotifier
                 SendNotify();
         }
 
+        /// <summary>
+        /// Returns string in json
+        /// </summary>
+        /// <returns></returns>
         public string CreateJson()
         {
             NotifyMessage message = new NotifyMessage()
@@ -43,6 +50,9 @@ namespace VkStreamNotifier
             return JsonConvert.SerializeObject(message);
         }
 
+        /// <summary>
+        /// Performs POST request to VK server
+        /// </summary>
         public void SendNotify()
         {
             WebRequest request = WebRequest.Create("https://broadcast.vkforms.ru/api/v2/broadcast?token=" + settings.vk_api_token);

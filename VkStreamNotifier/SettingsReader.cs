@@ -6,6 +6,10 @@ namespace VkStreamNotifier
 {
     class SettingsReader
     {
+        /// <summary>
+        /// Reads settings from json-file and return object of Settings class
+        /// </summary>
+        /// <returns></returns>
         static public Settings LoadSettings()
         {
             StreamReader streamReader = new StreamReader("credentials.json");

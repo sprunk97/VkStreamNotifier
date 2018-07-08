@@ -1,5 +1,8 @@
 ﻿namespace VkStreamNotifier
 {
+    /// <summary>
+    /// A part of the main json file
+    /// </summary>
     class Message
     {
         public string message { get; set; }

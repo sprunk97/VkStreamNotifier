@@ -1,5 +1,8 @@
 ﻿namespace VkStreamNotifier
 {
+    /// <summary>
+    /// Contains properties of settings and credentials
+    /// </summary>
     class Settings
     {
         public string twitch_id { get; set; }

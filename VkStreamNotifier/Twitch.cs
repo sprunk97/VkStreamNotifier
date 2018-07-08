@@ -16,6 +16,9 @@ namespace VkStreamNotifier
         public Twitch() { }
         public Twitch(Settings settings) => this.settings = settings;
 
+        /// <summary>
+        /// Creates twitch api and monitor to handle events
+        /// </summary>
         public void CreateConnection()
         {
             api.Settings.ClientId = settings.twitch_id;
