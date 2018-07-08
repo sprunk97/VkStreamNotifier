@@ -8,7 +8,7 @@ namespace VkStreamNotifier
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Commands: load, connect");
+            Console.WriteLine("Commands: load, connect, exit");
             do
             {
                 switch (Console.ReadLine())
@@ -23,7 +23,7 @@ namespace VkStreamNotifier
                         Connect();
                         break;
                     default:
-                        Console.WriteLine("Unrecognized command. List of commands: load, connect");
+                        Console.WriteLine("Unrecognized command. List of commands: load, connect, exit");
                         break;
                 }
             }
