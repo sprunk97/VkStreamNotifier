@@ -8,6 +8,7 @@ namespace VkStreamNotifier
 
         static void Main(string[] args)
         {
+            Console.WriteLine("Commands: load, connect");
             do
             {
                 switch (Console.ReadLine())
