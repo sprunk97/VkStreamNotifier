@@ -27,12 +27,18 @@ namespace VkStreamNotifier
 
             monitor = new LiveStreamMonitor(api);
             monitor.OnStreamOnline += new EventHandler<OnStreamOnlineArgs>(OnStreamOnline);
+            monitor.OnStreamOffline += new EventHandler<OnStreamOfflineArgs>(OnStreamOffline);
             monitor.OnStreamMonitorStarted += new EventHandler<OnStreamMonitorStartedArgs>(OnMonitorStarted);
             monitor.OnStreamMonitorEnded += new EventHandler<OnStreamMonitorEndedArgs>(OnMonitorEnded);
 
             monitor.CheckIntervalSeconds = 60;
             monitor.SetStreamsByUserId(new List<string>() { userId });
             monitor.StartService();
+        }
+
+        private void OnStreamOffline(object sender, OnStreamOfflineArgs e)
+        {
+            Console.WriteLine($"{DateTime.Now} {settings.twitch_username} ended stream");
         }
 
         private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
@@ -49,7 +55,7 @@ namespace VkStreamNotifier
 
         private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
-            Console.WriteLine($"{DateTime.Now} Stream started");
+            Console.WriteLine($"{DateTime.Now} {settings.twitch_username} started stream");
             VK vk = new VK(settings);
             vk.Connect();
         }
