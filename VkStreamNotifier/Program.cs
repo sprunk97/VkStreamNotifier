@@ -18,7 +18,8 @@ namespace VkStreamNotifier
             Twitch twitch = new Twitch(settings);
             twitch.CreateConnection();
 
-            Console.ReadKey();
+            if (Console.ReadLine() != "exit")
+                Console.ReadKey();
         }
     }
 }
