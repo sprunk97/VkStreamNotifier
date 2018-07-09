@@ -1,4 +1,5 @@
 ﻿using System;
+using CrashReporter;
 
 namespace VkStreamNotifier
 {
@@ -6,8 +7,12 @@ namespace VkStreamNotifier
     {
         private static Settings settings;
 
+        [STAThread]
         static void Main(string[] args)
         {
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.UnhandledException += new UnhandledExceptionEventHandler(GlobalExceptionHandler);
+
             Console.WriteLine("Commands: load, connect, exit");
             do
             {
@@ -28,6 +33,20 @@ namespace VkStreamNotifier
                 }
             }
             while (true);
+        }
+
+        static void GlobalExceptionHandler(object sender, UnhandledExceptionEventArgs args)
+        {
+            Exception e = (Exception)args.ExceptionObject;
+            var mail = new Sender("sprunk97@gmail.com", "sprunk97@gmail.com", "VkStreamNotifier Exception");
+            try
+            {
+                mail.SendReport(e);
+            }
+            catch (Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
         }
 
         static void Load()
