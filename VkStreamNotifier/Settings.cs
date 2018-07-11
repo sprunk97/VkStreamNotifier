@@ -13,5 +13,7 @@
         public string message { get; set; }
         public string list_ids { get; set; }
         public string vk_api_token { get; set; }
+        public string email { get; set; }
+        public string email_password { get; set; }
     }
 }

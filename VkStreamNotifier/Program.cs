@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using CrashReporter;
 
 namespace VkStreamNotifier
@@ -38,7 +39,8 @@ namespace VkStreamNotifier
         static void GlobalExceptionHandler(object sender, UnhandledExceptionEventArgs args)
         {
             Exception e = (Exception)args.ExceptionObject;
-            var mail = new Sender("sprunk97@gmail.com", "sprunk97@gmail.com", "VkStreamNotifier Exception");
+            NetworkCredential credential = new NetworkCredential(settings.email, settings.email_password);
+            var mail = new Sender(credential, "sprunk97@gmail.com", "VkStreamNotifier Exception", null, null);
             try
             {
                 mail.SendReport(e);
@@ -56,7 +58,8 @@ namespace VkStreamNotifier
             Console.WriteLine("\tCurrent settings:");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             foreach (var property in typeof(Settings).GetProperties())
-                Console.WriteLine($"{property.Name} : {property.GetValue(settings, null)}");
+                if (property.Name != "email" && property.Name != "email_password")
+                    Console.WriteLine($"{property.Name} : {property.GetValue(settings, null)}");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine();
         }
