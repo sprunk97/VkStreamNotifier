@@ -6,7 +6,10 @@ namespace VkStreamNotifier
 {
     class Program
     {
+        #region variables
         private static Settings settings;
+        private static Twitch twitch;
+        #endregion
 
         [STAThread]
         static void Main(string[] args)
@@ -66,7 +69,7 @@ namespace VkStreamNotifier
 
         static void Connect()
         {
-            Twitch twitch = new Twitch(settings);
+            twitch = new Twitch(settings);
             twitch.CreateConnection();
         }
     }
