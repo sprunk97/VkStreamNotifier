@@ -2,9 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
-
 using Newtonsoft.Json;
-
 using VkNet;
 using VkNet.Model;
 
@@ -13,11 +11,11 @@ namespace VkStreamNotifier
     class VK
     {
         private VkApi api = new VkApi();
-        private Settings settings;
+        private Schemes.Settings settings;
         public bool IsAuthorized { get; private set; } = false;
 
         public VK() { }
-        public VK(Settings settings) => this.settings = settings;
+        public VK(Schemes.Settings settings) => this.settings = settings;
 
         /// <summary>
         /// Authorizing VK api and invokes sending messages
@@ -39,9 +37,9 @@ namespace VkStreamNotifier
         /// <returns></returns>
         public string CreateJson()
         {
-            NotifyMessage message = new NotifyMessage()
+            Schemes.NotifyMessage message = new Schemes.NotifyMessage()
             {
-                message = new Message() { message = settings.message },
+                message = new Schemes.Message() { message = settings.message },
                 list_ids = settings.list_ids,
                 run_now = "1",
                 access_token = settings.vk_app_token

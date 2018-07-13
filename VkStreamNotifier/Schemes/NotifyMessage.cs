@@ -1,4 +1,4 @@
-﻿namespace VkStreamNotifier
+﻿namespace VkStreamNotifier.Schemes
 {
     /// <summary>
     /// Main json file to send

@@ -1,6 +1,6 @@
 ﻿using System.IO;
-
 using Newtonsoft.Json;
+using VkStreamNotifier.Schemes;
 
 namespace VkStreamNotifier
 {

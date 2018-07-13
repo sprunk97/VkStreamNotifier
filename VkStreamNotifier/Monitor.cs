@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using TwitchLib.Api;
 using TwitchLib.Api.Services;
 using TwitchLib.Api.Services.Events.LiveStreamMonitor;
+using VkStreamNotifier.Schemes;
 
 namespace VkStreamNotifier
 {

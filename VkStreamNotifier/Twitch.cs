@@ -1,4 +1,5 @@
 ﻿using TwitchLib.Api;
+using VkStreamNotifier.Schemes;
 
 namespace VkStreamNotifier
 {

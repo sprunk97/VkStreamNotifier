@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using CrashReporter;
+using VkStreamNotifier.Schemes;
 
 namespace VkStreamNotifier
 {

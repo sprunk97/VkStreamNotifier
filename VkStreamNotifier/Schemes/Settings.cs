@@ -1,4 +1,4 @@
-﻿namespace VkStreamNotifier
+﻿namespace VkStreamNotifier.Schemes
 {
     /// <summary>
     /// Contains properties of settings and credentials
