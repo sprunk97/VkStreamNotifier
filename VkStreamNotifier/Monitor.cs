@@ -12,6 +12,7 @@ namespace VkStreamNotifier
         private LiveStreamMonitor monitor;
         private Settings settings;
         private static Monitor instance;
+        private VK vk;
 
         public Monitor() { }
         protected Monitor(Settings settings, TwitchAPI api)
@@ -44,7 +45,7 @@ namespace VkStreamNotifier
 
         private void OnStreamOffline(object sender, OnStreamOfflineArgs e)
         {
-            Console.WriteLine($"{DateTime.Now} {settings.twitch_username} ended stream");
+            Console.WriteLine($"{DateTime.Now} {e.Channel} ended stream");
         }
 
         private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
@@ -57,13 +58,15 @@ namespace VkStreamNotifier
         private void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
         {
             Console.WriteLine($"{DateTime.Now} Monitor started");
+            vk = new VK(settings);
+            vk.Connect();
         }
 
         private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
-            Console.WriteLine($"{DateTime.Now} {settings.twitch_username} started stream");
-            VK vk = new VK(settings);
-            vk.Connect();
+            Console.WriteLine($"{DateTime.Now} {e.Channel} started stream");
+            if (vk.IsAuthorized) vk.SendNotify();
+            else vk.Connect();
         }
     }
 }

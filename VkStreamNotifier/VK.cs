@@ -14,6 +14,7 @@ namespace VkStreamNotifier
     {
         private VkApi api = new VkApi();
         private Settings settings;
+        public bool IsAuthorized { get; private set; } = false;
 
         public VK() { }
         public VK(Settings settings) => this.settings = settings;
@@ -29,9 +30,7 @@ namespace VkStreamNotifier
                 Settings = VkNet.Enums.Filters.Settings.All,
                 AccessToken = settings.vk_app_token
             });
-
-            if (api.IsAuthorized)
-                SendNotify();
+            IsAuthorized = true;
         }
 
         /// <summary>
@@ -81,6 +80,7 @@ namespace VkStreamNotifier
             dataStream = response.GetResponseStream();
             StreamReader reader = new StreamReader(dataStream);
             string responseFromServer = reader.ReadToEnd();
+
             Console.WriteLine(responseFromServer);
             
             reader.Close();
