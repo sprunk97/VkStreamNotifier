@@ -1,14 +1,20 @@
-﻿using TwitchLib.Api;
+﻿using System.Collections.Generic;
+using TwitchLib.Api;
 using VkStreamNotifier.Schemes;
 
 namespace VkStreamNotifier
 {
     class Twitch
     {
-        private Settings settings;
+        private List<Streamer> streamers;
+        private Credentials credentials;
 
         public Twitch() { }
-        public Twitch(Settings settings) => this.settings = settings;
+        public Twitch(Credentials credentials, List<Streamer> streamers)
+        {
+            this.credentials = credentials;
+            this.streamers = streamers;
+        }
 
         /// <summary>
         /// Creates twitch api and monitor instance
@@ -16,10 +22,10 @@ namespace VkStreamNotifier
         public void CreateConnection()
         {
             TwitchAPI api = new TwitchAPI();
-            api.Settings.ClientId = settings.twitch_id;
-            api.Settings.AccessToken = settings.twitch_token;
+            api.Settings.ClientId = credentials.twitch_id;
+            api.Settings.AccessToken = credentials.twitch_token;
 
-            var monitor = Monitor.GetInstance(settings, api);
+            var monitor = Monitor.GetInstance(credentials, streamers, api);
         }
     }
 }

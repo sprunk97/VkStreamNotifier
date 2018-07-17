@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Net;
+using System.Linq;
 using CrashReporter;
 using VkStreamNotifier.Schemes;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace VkStreamNotifier
 {
     class Program
     {
         #region variables
-        private static Settings settings;
+        private static Credentials credential;
+        private static List<Streamer> streamers;
         private static Twitch twitch;
         #endregion
 
         [STAThread]
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             AppDomain currentDomain = AppDomain.CurrentDomain;
             currentDomain.UnhandledException += new UnhandledExceptionEventHandler(GlobalExceptionHandler);
@@ -27,7 +31,7 @@ namespace VkStreamNotifier
                         Environment.Exit(0);
                         break;
                     case "load":
-                        Load();
+                        await Load();
                         break;
                     case "connect":
                         Connect();
@@ -43,8 +47,8 @@ namespace VkStreamNotifier
         static void GlobalExceptionHandler(object sender, UnhandledExceptionEventArgs args)
         {
             Exception e = (Exception)args.ExceptionObject;
-            NetworkCredential credential = new NetworkCredential(settings.email, settings.email_password);
-            var mail = new Sender(credential, "sprunk97@gmail.com", "VkStreamNotifier Exception", null, null);
+            NetworkCredential networkCredential = new NetworkCredential(credential.email, credential.email_password);
+            var mail = new Sender(networkCredential, "sprunk97@gmail.com", "VkStreamNotifier Exception", null, null);
             try
             {
                 mail.SendReport(e);
@@ -55,22 +59,31 @@ namespace VkStreamNotifier
             }
         }
 
-        static void Load()
+        static async Task Load()
         {
-            settings = SettingsReader.LoadSettings();
+            var credentials = await SettingsReader.GetCredentialsAsync();
+            credential = credentials.Last();
 
-            Console.WriteLine("\tCurrent settings:");
+            Console.WriteLine("\tCurrent credentials:");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            foreach (var property in typeof(Settings).GetProperties())
-                if (property.Name != "email" && property.Name != "email_password")
-                    Console.WriteLine($"{property.Name} : {property.GetValue(settings, null)}");
+            foreach (var property in typeof(Credentials).GetProperties())
+                Console.WriteLine($"{property.Name} : {property.GetValue(credential, null)}");
             Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine();
+
+            streamers = await SettingsReader.GetStreamersListAsync();
+            foreach(var streamer in streamers)
+            {
+                foreach (var property in typeof(Streamer).GetProperties())
+                    Console.WriteLine($"{property.Name} : {property.GetValue(streamer, null)}");
+                Console.WriteLine();
+            }
             Console.WriteLine();
         }
 
         static void Connect()
         {
-            twitch = new Twitch(settings);
+            twitch = new Twitch(credential, streamers);
             twitch.CreateConnection();
         }
     }

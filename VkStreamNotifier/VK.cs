@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -11,22 +12,27 @@ namespace VkStreamNotifier
     class VK
     {
         private VkApi api = new VkApi();
-        private Schemes.Settings settings;
+        private List<Schemes.Streamer> streamers;
+        private Schemes.Credentials credentials;
         public bool IsAuthorized { get; private set; } = false;
 
         public VK() { }
-        public VK(Schemes.Settings settings) => this.settings = settings;
+        public VK(Schemes.Credentials credentials, List<Schemes.Streamer> streamers)
+        {
+            this.credentials = credentials;
+            this.streamers = streamers;
+        }
 
         /// <summary>
-        /// Authorizing VK api and invokes sending messages
+        /// Authorizing VK api
         /// </summary>
         public async void Connect()
         {
             await api.AuthorizeAsync(new ApiAuthParams
             {
-                ApplicationId = ulong.Parse(settings.vk_app_id),
+                ApplicationId = ulong.Parse(credentials.vk_app_id),
                 Settings = VkNet.Enums.Filters.Settings.All,
-                AccessToken = settings.vk_app_token
+                AccessToken = credentials.vk_app_token
             });
             IsAuthorized = true;
         }
@@ -35,14 +41,14 @@ namespace VkStreamNotifier
         /// Returns string in json
         /// </summary>
         /// <returns></returns>
-        public string CreateJson()
+        public string CreateJson(Schemes.Streamer streamer)
         {
             Schemes.NotifyMessage message = new Schemes.NotifyMessage()
             {
-                message = new Schemes.Message() { message = settings.message },
-                list_ids = settings.list_ids,
+                message = new Schemes.Message() { message = streamer.message },
+                list_ids = streamer.list_ids,
                 run_now = "1",
-                access_token = settings.vk_app_token
+                access_token = credentials.vk_app_token
             };
             return JsonConvert.SerializeObject(message);
         }
@@ -50,13 +56,14 @@ namespace VkStreamNotifier
         /// <summary>
         /// Performs POST request to VK server
         /// </summary>
-        public void SendNotify()
+        public void SendNotify(string username)
         {
-            WebRequest request = WebRequest.Create("https://broadcast.vkforms.ru/api/v2/broadcast?token=" + settings.vk_api_token);
+            var streamer = streamers.Find(x => x.twitch_username.Equals(username));
+            WebRequest request = WebRequest.Create("https://broadcast.vkforms.ru/api/v2/broadcast?token=" + streamer.vk_api_token);
             request.Method = "POST";
             request.ContentType = "application/json";
 
-            var json = CreateJson();
+            var json = CreateJson(streamer);
 
             byte[] byteArray = Encoding.UTF8.GetBytes(json);
             request.ContentLength = byteArray.Length;
@@ -65,7 +72,6 @@ namespace VkStreamNotifier
             dataStream.Write(byteArray, 0, byteArray.Length);
             dataStream.Close();
 
-            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\rSending request...");
             WebResponse response = request.GetResponse();
             if (((HttpWebResponse)response).StatusDescription == "OK")
