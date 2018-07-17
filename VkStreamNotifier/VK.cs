@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using VkNet;
 using VkNet.Model;
@@ -10,7 +11,8 @@ namespace VkStreamNotifier
 {
     class VK
     {
-        private VkApi api = new VkApi();
+        private const string path = "https://broadcast.vkforms.ru/api/v2/broadcast?token=";
+        private readonly VkApi api = new VkApi();
         private readonly Schemes.Credentials credentials;
         public bool IsAuthorized { get; private set; } = false;
         public Schemes.Streamer streamer;
@@ -25,7 +27,7 @@ namespace VkStreamNotifier
         /// <summary>
         /// Authorizing VK api
         /// </summary>
-        public async void Connect()
+        public async Task ConnectAsync()
         {
             await api.AuthorizeAsync(new ApiAuthParams
             {
@@ -57,7 +59,7 @@ namespace VkStreamNotifier
         /// </summary>
         public void SendNotify()
         {
-            WebRequest request = WebRequest.Create("https://broadcast.vkforms.ru/api/v2/broadcast?token=" + streamer.vk_api_token);
+            WebRequest request = WebRequest.Create(path + streamer.vk_api_token);
             request.Method = "POST";
             request.ContentType = "application/json";
 
