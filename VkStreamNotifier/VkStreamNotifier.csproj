@@ -248,10 +248,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="credentials.json">
-      <SubType>Component</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

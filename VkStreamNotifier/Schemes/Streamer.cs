@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 namespace VkStreamNotifier.Schemes
 {
@@ -22,5 +23,8 @@ namespace VkStreamNotifier.Schemes
 
         [BsonElement("vk_api_token")]
         public string vk_api_token { get; set; }
+
+        [BsonIgnore]
+        public DateTime? stream_ended { get; set; }
     }
 }

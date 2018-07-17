@@ -50,7 +50,8 @@ namespace VkStreamNotifier
 
         private void OnStreamOffline(object sender, OnStreamOfflineArgs e)
         {
-            Console.WriteLine($"{DateTime.Now} {e.Channel} ended stream");
+            Console.WriteLine($"{DateTime.Now} {e.Channel} ended stream\r");
+            streamers.Find(x => x.twitch_username.Equals(e.Channel)).stream_ended = DateTime.Now;
         }
 
         private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
@@ -63,6 +64,8 @@ namespace VkStreamNotifier
         private void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
         {
             Console.WriteLine($"{DateTime.Now} Monitor started");
+            Console.WriteLine($"Current offline streams amount: {monitor.CurrentOfflineStreams.Count}");
+            Console.WriteLine($"Current live streams amount: {monitor.CurrentLiveStreams.Count}");
 
             vk = new VK(credentials, streamers);
             vk.Connect();
@@ -70,9 +73,22 @@ namespace VkStreamNotifier
 
         private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
-            Console.WriteLine($"{DateTime.Now} {e.Channel} started stream");
-            if (vk.IsAuthorized) vk.SendNotify(e.Channel);
-            else vk.Connect();
+            Console.WriteLine($"{DateTime.Now} {e.Channel} started stream\r");
+            if (streamers.Find(x => x.twitch_username.Equals(e.Channel)).stream_ended?.AddHours(1) < DateTime.Now)
+            {
+                if (vk.IsAuthorized) vk.SendNotify(e.Channel);
+                else
+                {
+                    vk.Connect();
+                    vk.SendNotify(e.Channel);
+                }
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
         }
     }
 }
