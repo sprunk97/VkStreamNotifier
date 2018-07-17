@@ -3,7 +3,7 @@
     /// <summary>
     /// Main json file to send
     /// </summary>
-    class NotifyMessage
+    public class NotifyMessage
     {
         public Message message { get; set; }
         public string user_ids { get; set; }

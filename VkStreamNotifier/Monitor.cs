@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TwitchLib.Api;
 using TwitchLib.Api.Services;
 using TwitchLib.Api.Services.Events.LiveStreamMonitor;
@@ -13,7 +14,7 @@ namespace VkStreamNotifier
         private List<Streamer> streamers;
         private Credentials credentials;
         private static Monitor instance;
-        private VK vk;
+        private List<VK> vkList = new List<VK>();
 
         public Monitor() { }
         protected Monitor(Credentials credentials, List<Streamer> streamers, TwitchAPI api)
@@ -51,7 +52,7 @@ namespace VkStreamNotifier
         private void OnStreamOffline(object sender, OnStreamOfflineArgs e)
         {
             Console.WriteLine($"{DateTime.Now} {e.Channel} ended stream\r");
-            streamers.Find(x => x.twitch_username.Equals(e.Channel)).stream_ended = DateTime.Now;
+            vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended = DateTime.Now;
         }
 
         private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
@@ -67,20 +68,24 @@ namespace VkStreamNotifier
             Console.WriteLine($"Current offline streams amount: {monitor.CurrentOfflineStreams.Count}");
             Console.WriteLine($"Current live streams amount: {monitor.CurrentLiveStreams.Count}");
 
-            vk = new VK(credentials, streamers);
-            vk.Connect();
+            foreach (var streamer in streamers)
+            {
+                vkList.Add(new VK(credentials, streamer));
+                vkList.Last().Connect();
+            }
         }
 
         private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
             Console.WriteLine($"{DateTime.Now} {e.Channel} started stream\r");
-            if (streamers.Find(x => x.twitch_username.Equals(e.Channel)).stream_ended?.AddHours(1) < DateTime.Now)
+            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended?.AddHours(1) < DateTime.Now)
             {
-                if (vk.IsAuthorized) vk.SendNotify(e.Channel);
+                var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
+                if (vk.IsAuthorized) vk.SendNotify();
                 else
                 {
                     vk.Connect();
-                    vk.SendNotify(e.Channel);
+                    vk.SendNotify();
                 }
             }
             else

@@ -6,7 +6,7 @@ namespace VkStreamNotifier.Schemes
     /// <summary>
     /// API's credentials
     /// </summary>
-    class Credentials
+    public class Credentials
     {
         [BsonId]
         public ObjectId _id { get; set; }
@@ -19,9 +19,6 @@ namespace VkStreamNotifier.Schemes
 
         [BsonElement("vk_app_id")]
         public string vk_app_id { get; set; }
-
-        [BsonElement("vk_app_token")]
-        public string vk_app_token { get; set; }
 
         [BsonElement("email")]
         public string email { get; set; }

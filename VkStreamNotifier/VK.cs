@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -12,15 +11,15 @@ namespace VkStreamNotifier
     class VK
     {
         private VkApi api = new VkApi();
-        private List<Schemes.Streamer> streamers;
+        public Schemes.Streamer streamer;
         private Schemes.Credentials credentials;
         public bool IsAuthorized { get; private set; } = false;
 
         public VK() { }
-        public VK(Schemes.Credentials credentials, List<Schemes.Streamer> streamers)
+        public VK(Schemes.Credentials credentials, Schemes.Streamer streamer)
         {
             this.credentials = credentials;
-            this.streamers = streamers;
+            this.streamer = streamer;
         }
 
         /// <summary>
@@ -32,7 +31,7 @@ namespace VkStreamNotifier
             {
                 ApplicationId = ulong.Parse(credentials.vk_app_id),
                 Settings = VkNet.Enums.Filters.Settings.All,
-                AccessToken = credentials.vk_app_token
+                AccessToken = streamer.vk_app_token
             });
             IsAuthorized = true;
         }
@@ -41,14 +40,14 @@ namespace VkStreamNotifier
         /// Returns string in json
         /// </summary>
         /// <returns></returns>
-        public string CreateJson(Schemes.Streamer streamer)
+        public string CreateJson()
         {
             Schemes.NotifyMessage message = new Schemes.NotifyMessage()
             {
                 message = new Schemes.Message() { message = streamer.message },
                 list_ids = streamer.list_ids,
                 run_now = "1",
-                access_token = credentials.vk_app_token
+                access_token = streamer.vk_app_token
             };
             return JsonConvert.SerializeObject(message);
         }
@@ -56,14 +55,13 @@ namespace VkStreamNotifier
         /// <summary>
         /// Performs POST request to VK server
         /// </summary>
-        public void SendNotify(string username)
+        public void SendNotify()
         {
-            var streamer = streamers.Find(x => x.twitch_username.Equals(username));
             WebRequest request = WebRequest.Create("https://broadcast.vkforms.ru/api/v2/broadcast?token=" + streamer.vk_api_token);
             request.Method = "POST";
             request.ContentType = "application/json";
 
-            var json = CreateJson(streamer);
+            var json = CreateJson();
 
             byte[] byteArray = Encoding.UTF8.GetBytes(json);
             request.ContentLength = byteArray.Length;

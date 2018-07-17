@@ -1,13 +1,13 @@
-﻿using MongoDB.Bson;
+﻿using System;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
 
 namespace VkStreamNotifier.Schemes
 {
     /// <summary>
     /// Contains streamer info
     /// </summary>
-    class Streamer
+    public class Streamer
     {
         [BsonId]
         public ObjectId _id { get; set; }
@@ -23,6 +23,9 @@ namespace VkStreamNotifier.Schemes
 
         [BsonElement("vk_api_token")]
         public string vk_api_token { get; set; }
+
+        [BsonElement("vk_app_token")]
+        public string vk_app_token { get; set; }
 
         [BsonIgnore]
         public DateTime? stream_ended { get; set; }

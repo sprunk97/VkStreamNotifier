@@ -3,7 +3,7 @@
     /// <summary>
     /// A part of the main json file
     /// </summary>
-    class Message
+    public class Message
     {
         public string message { get; set; }
         public string[] attachment { get; set; }
