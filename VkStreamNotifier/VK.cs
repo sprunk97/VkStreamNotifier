@@ -11,9 +11,9 @@ namespace VkStreamNotifier
     class VK
     {
         private VkApi api = new VkApi();
-        public Schemes.Streamer streamer;
-        private Schemes.Credentials credentials;
+        private readonly Schemes.Credentials credentials;
         public bool IsAuthorized { get; private set; } = false;
+        public Schemes.Streamer streamer;
 
         public VK() { }
         public VK(Schemes.Credentials credentials, Schemes.Streamer streamer)
