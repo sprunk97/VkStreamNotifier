@@ -7,7 +7,7 @@ using VkStreamNotifier.Schemes;
 
 namespace VkStreamNotifier
 {
-    class SettingsReader
+    public static class SettingsReader
     {
         /// <summary>
         /// Returns list of streamers info
