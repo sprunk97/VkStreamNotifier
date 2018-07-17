@@ -6,8 +6,8 @@ namespace VkStreamNotifier
 {
     class Twitch
     {
-        private List<Streamer> streamers;
-        private Credentials credentials;
+        private readonly List<Streamer> streamers;
+        private readonly Credentials credentials;
 
         public Twitch() { }
         public Twitch(Credentials credentials, List<Streamer> streamers)
@@ -25,7 +25,7 @@ namespace VkStreamNotifier
             api.Settings.ClientId = credentials.twitch_id;
             api.Settings.AccessToken = credentials.twitch_token;
 
-            var monitor = Monitor.GetInstance(credentials, streamers, api);
+            Monitor.GetInstance(credentials, streamers, api);
         }
     }
 }

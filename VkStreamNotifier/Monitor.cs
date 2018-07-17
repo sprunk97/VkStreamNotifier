@@ -11,10 +11,10 @@ namespace VkStreamNotifier
     class Monitor
     {
         private LiveStreamMonitor monitor;
-        private List<Streamer> streamers;
-        private Credentials credentials;
+        private readonly List<Streamer> streamers;
+        private readonly Credentials credentials;
         private static Monitor instance;
-        private List<VK> vkList = new List<VK>();
+        private readonly List<VK> vkList = new List<VK>();
 
         public Monitor() { }
         protected Monitor(Credentials credentials, List<Streamer> streamers, TwitchAPI api)
@@ -62,7 +62,7 @@ namespace VkStreamNotifier
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
-        private void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
+        private async void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
         {
             Console.WriteLine($"{DateTime.Now} Monitor started");
             Console.WriteLine($"Current offline streams amount: {monitor.CurrentOfflineStreams.Count}");
@@ -71,11 +71,11 @@ namespace VkStreamNotifier
             foreach (var streamer in streamers)
             {
                 vkList.Add(new VK(credentials, streamer));
-                vkList.Last().Connect();
+                await vkList.Last().ConnectAsync();
             }
         }
 
-        private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
+        private async void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
             Console.WriteLine($"{DateTime.Now} {e.Channel} started stream\r");
             if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended?.AddHours(1) < DateTime.Now)
@@ -84,7 +84,7 @@ namespace VkStreamNotifier
                 if (vk.IsAuthorized) vk.SendNotify();
                 else
                 {
-                    vk.Connect();
+                    await vk.ConnectAsync();
                     vk.SendNotify();
                 }
             }

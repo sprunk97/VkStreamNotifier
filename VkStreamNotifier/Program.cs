@@ -8,12 +8,11 @@ using System.Collections.Generic;
 
 namespace VkStreamNotifier
 {
-    class Program
+    internal static class Program
     {
         #region variables
         private static Credentials credential;
         private static List<Streamer> streamers;
-        private static Twitch twitch;
         #endregion
 
         [STAThread]
@@ -83,7 +82,7 @@ namespace VkStreamNotifier
 
         static void Connect()
         {
-            twitch = new Twitch(credential, streamers);
+            var twitch = new Twitch(credential, streamers);
             twitch.CreateConnection();
         }
     }
