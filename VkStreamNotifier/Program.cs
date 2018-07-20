@@ -21,6 +21,12 @@ namespace VkStreamNotifier
             AppDomain currentDomain = AppDomain.CurrentDomain;
             currentDomain.UnhandledException += new UnhandledExceptionEventHandler(GlobalExceptionHandler);
 
+            if (args.Length != 0 && args.Contains("-lc"))
+            {
+                await Load();
+                Connect();
+            }
+
             Console.WriteLine("Commands: load, connect, exit");
             do
             {
@@ -71,7 +77,7 @@ namespace VkStreamNotifier
             Console.WriteLine();
 
             streamers = await SettingsReader.GetStreamersListAsync();
-            foreach(var streamer in streamers)
+            foreach (var streamer in streamers)
             {
                 foreach (var property in typeof(Streamer).GetProperties())
                     Console.WriteLine($"{property.Name} : {property.GetValue(streamer, null)}");
