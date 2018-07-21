@@ -38,13 +38,12 @@ namespace VkStreamNotifier
             foreach (var streamer in streamers)
                 userIds.Add(api.Users.v5.GetUserByNameAsync(streamer.twitch_username).Result.Matches[0].Id);
 
-            monitor = new LiveStreamMonitor(api);
+            monitor = new LiveStreamMonitor(api, 60, true, false);
             monitor.OnStreamOnline += new EventHandler<OnStreamOnlineArgs>(OnStreamOnline);
             monitor.OnStreamOffline += new EventHandler<OnStreamOfflineArgs>(OnStreamOffline);
             monitor.OnStreamMonitorStarted += new EventHandler<OnStreamMonitorStartedArgs>(OnMonitorStarted);
             monitor.OnStreamMonitorEnded += new EventHandler<OnStreamMonitorEndedArgs>(OnMonitorEnded);
 
-            monitor.CheckIntervalSeconds = 60;
             monitor.SetStreamsByUserId(userIds);
             monitor.StartService();
         }
@@ -78,7 +77,17 @@ namespace VkStreamNotifier
         private async void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
             Console.WriteLine($"{DateTime.Now} {e.Channel} started stream\r");
-            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended?.AddHours(1) < DateTime.Now)
+            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended == null)
+            {
+                var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
+                if (vk.IsAuthorized) vk.SendNotify();
+                else
+                {
+                    await vk.ConnectAsync();
+                    vk.SendNotify();
+                }
+            }
+            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended != null && vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended?.AddHours(1) < DateTime.Now)
             {
                 var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
                 if (vk.IsAuthorized) vk.SendNotify();
