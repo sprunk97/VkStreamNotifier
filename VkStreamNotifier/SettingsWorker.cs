@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -7,7 +8,7 @@ using VkStreamNotifier.Schemes;
 
 namespace VkStreamNotifier
 {
-    public static class SettingsReader
+    public static class SettingsWorker
     {
         /// <summary>
         /// Returns list of streamers info
@@ -43,6 +44,24 @@ namespace VkStreamNotifier
                 credentials.Add(BsonSerializer.Deserialize<Credentials>(doc));
 
             return credentials;
+        }
+
+        /// <summary>
+        /// Updates time when streamer went offline
+        /// </summary>
+        /// <param name="stream_ended"></param>
+        /// <param name="twitch_username"></param>
+        /// <returns></returns>
+        public static async Task<UpdateResult> UpdateDowntimeAsync(DateTime stream_ended, string twitch_username)
+        {
+            MongoClient client = new MongoClient("mongodb://localhost:27017");
+            var database = client.GetDatabase("notifier");
+            var collection = database.GetCollection<Streamer>("streamers");
+
+            var filter = Builders<Streamer>.Filter.Eq("twitch_username", twitch_username);
+            var update = Builders<Streamer>.Update.Set(x => x.stream_ended, stream_ended);
+            var result = await collection.UpdateOneAsync(filter, update);
+            return result;
         }
     }
 }

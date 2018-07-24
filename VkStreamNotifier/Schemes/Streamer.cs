@@ -27,7 +27,8 @@ namespace VkStreamNotifier.Schemes
         [BsonElement("vk_app_token")]
         public string vk_app_token { get; set; }
 
-        [BsonIgnore]
-        public DateTime? stream_ended { get; set; }
+        [BsonElement("stream_ended")]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime stream_ended { get; set; }
     }
 }

@@ -15,6 +15,7 @@ namespace VkStreamNotifier
         private readonly Credentials credentials;
         private static Monitor instance;
         private readonly List<VK> vkList = new List<VK>();
+        private object locker = new object();
 
         public Monitor() { }
         protected Monitor(Credentials credentials, List<Streamer> streamers, TwitchAPI api)
@@ -48,10 +49,13 @@ namespace VkStreamNotifier
             monitor.StartService();
         }
 
-        private void OnStreamOffline(object sender, OnStreamOfflineArgs e)
+        private async void OnStreamOffline(object sender, OnStreamOfflineArgs e)
         {
             Console.WriteLine($"{DateTime.Now} {e.Channel} ended stream\r");
-            vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended = DateTime.Now;
+            var current = DateTime.Now;
+            vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended = current;
+            var result = await SettingsWorker.UpdateDowntimeAsync(current, e.Channel);
+            Console.WriteLine($"Found: {result.MatchedCount}. Updated: {result.ModifiedCount}");
         }
 
         private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
@@ -61,47 +65,29 @@ namespace VkStreamNotifier
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
-        private async void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
+        private void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
         {
             Console.WriteLine($"{DateTime.Now} Monitor started");
             Console.WriteLine($"Current offline streams amount: {monitor.CurrentOfflineStreams.Count}");
             Console.WriteLine($"Current live streams amount: {monitor.CurrentLiveStreams.Count}");
-
-            foreach (var streamer in streamers)
-            {
-                vkList.Add(new VK(credentials, streamer));
-                await vkList.Last().ConnectAsync();
-            }
         }
 
-        private async void OnStreamOnline(object sender, OnStreamOnlineArgs e)
+        private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
             Console.WriteLine($"{DateTime.Now} {e.Channel} started stream\r");
-            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended == null)
+            lock (locker)
             {
-                var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
-                if (vk.IsAuthorized) vk.SendNotify();
-                else
+                if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) < DateTime.Now)
                 {
-                    await vk.ConnectAsync();
+                    var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
                     vk.SendNotify();
                 }
-            }
-            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended != null && vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended?.AddHours(1) < DateTime.Now)
-            {
-                var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
-                if (vk.IsAuthorized) vk.SendNotify();
                 else
                 {
-                    await vk.ConnectAsync();
-                    vk.SendNotify();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
+                    Console.ForegroundColor = ConsoleColor.Gray;
                 }
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
-                Console.ForegroundColor = ConsoleColor.Gray;
             }
         }
     }

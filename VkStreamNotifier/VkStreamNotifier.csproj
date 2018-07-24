@@ -58,7 +58,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Schemes\Streamer.cs" />
-    <Compile Include="SettingsReader.cs" />
+    <Compile Include="SettingsWorker.cs" />
     <Compile Include="Twitch.cs" />
     <Compile Include="VK.cs" />
   </ItemGroup>

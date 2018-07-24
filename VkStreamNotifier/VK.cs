@@ -14,7 +14,6 @@ namespace VkStreamNotifier
         private const string path = "https://broadcast.vkforms.ru/api/v2/broadcast?token=";
         private readonly VkApi api = new VkApi();
         private readonly Schemes.Credentials credentials;
-        public bool IsAuthorized { get; private set; } = false;
         public Schemes.Streamer streamer;
 
         public VK() { }
@@ -35,7 +34,6 @@ namespace VkStreamNotifier
                 Settings = VkNet.Enums.Filters.Settings.All,
                 AccessToken = streamer.vk_app_token
             });
-            IsAuthorized = true;
         }
 
         /// <summary>

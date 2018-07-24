@@ -5,6 +5,7 @@ using CrashReporter;
 using VkStreamNotifier.Schemes;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Windows.Input;
 
 namespace VkStreamNotifier
 {
@@ -27,7 +28,7 @@ namespace VkStreamNotifier
                 Connect();
             }
 
-            Console.WriteLine("Commands: load, connect, exit");
+            Console.WriteLine("Commands: load, connect, update, help, exit");
             do
             {
                 switch (Console.ReadLine())
@@ -41,8 +42,18 @@ namespace VkStreamNotifier
                     case "connect":
                         Connect();
                         break;
+                    case "update":
+                        await UpdateEndings();
+                        break;
+                    case "help":
+                        Console.WriteLine("Commands: load, connect, update, help, exit");
+                        break;
+                    case "":
+                        Console.Clear();
+                        Console.WriteLine("Commands: load, connect, update, help, exit");
+                        break;
                     default:
-                        Console.WriteLine("Unrecognized command. List of commands: load, connect, exit");
+                        Console.WriteLine("Unrecognized command. Use help");
                         break;
                 }
             }
@@ -66,7 +77,7 @@ namespace VkStreamNotifier
 
         static async Task Load()
         {
-            var credentials = await SettingsReader.GetCredentialsAsync();
+            var credentials = await SettingsWorker.GetCredentialsAsync();
             credential = credentials.Last();
 
             Console.WriteLine("\tCurrent credentials:");
@@ -76,20 +87,32 @@ namespace VkStreamNotifier
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine();
 
-            streamers = await SettingsReader.GetStreamersListAsync();
+            streamers = await SettingsWorker.GetStreamersListAsync();
             foreach (var streamer in streamers)
             {
                 foreach (var property in typeof(Streamer).GetProperties())
                     Console.WriteLine($"{property.Name} : {property.GetValue(streamer, null)}");
                 Console.WriteLine();
             }
-            Console.WriteLine();
         }
 
         static void Connect()
         {
             var twitch = new Twitch(credential, streamers);
             twitch.CreateConnection();
+        }
+
+        static async Task UpdateEndings()
+        {
+            MongoDB.Driver.UpdateResult result = null;
+            foreach (var streamer in streamers)
+            {
+                if (streamer.stream_ended == null)
+                    result = await SettingsWorker.UpdateDowntimeAsync(DateTime.Now, streamer.twitch_username);
+                if (result?.ModifiedCount > 0)
+                    Console.WriteLine($"{streamer.twitch_username}: updated ending time");
+            }
+            Console.WriteLine("Updated");
         }
     }
 }
