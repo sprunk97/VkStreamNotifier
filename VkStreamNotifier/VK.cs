@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NLog;
 using VkNet;
 using VkNet.Model;
 
@@ -12,6 +13,7 @@ namespace VkStreamNotifier
     class VK
     {
         private const string path = "https://broadcast.vkforms.ru/api/v2/broadcast?token=";
+        private static Logger log = LogManager.GetCurrentClassLogger();
         private readonly VkApi api = new VkApi();
         private readonly Schemes.Credentials credentials;
         public Schemes.Streamer streamer;
@@ -28,6 +30,7 @@ namespace VkStreamNotifier
         /// </summary>
         public async Task ConnectAsync()
         {
+            log.Info("VK authorizing");
             await api.AuthorizeAsync(new ApiAuthParams
             {
                 ApplicationId = ulong.Parse(credentials.vk_app_id),
@@ -55,8 +58,9 @@ namespace VkStreamNotifier
         /// <summary>
         /// Performs POST request to VK server
         /// </summary>
-        public void SendNotify()
+        public void Notify()
         {
+            log.Info("Sending notification");
             WebRequest request = WebRequest.Create(path + streamer.vk_api_token);
             request.Method = "POST";
             request.ContentType = "application/json";
@@ -70,7 +74,6 @@ namespace VkStreamNotifier
             dataStream.Write(byteArray, 0, byteArray.Length);
             dataStream.Close();
 
-            Console.WriteLine("\rSending request...");
             WebResponse response = request.GetResponse();
             if (((HttpWebResponse)response).StatusDescription == "OK")
                 Console.ForegroundColor = ConsoleColor.Green;

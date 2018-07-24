@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TwitchLib.Api;
@@ -16,6 +17,7 @@ namespace VkStreamNotifier
         private static Monitor instance;
         private readonly List<VK> vkList = new List<VK>();
         private object locker = new object();
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public Monitor() { }
         protected Monitor(Credentials credentials, List<Streamer> streamers, TwitchAPI api)
@@ -28,13 +30,20 @@ namespace VkStreamNotifier
         public static Monitor GetInstance(Credentials credentials, List<Streamer> streamers, TwitchAPI api)
         {
             if (instance == null)
+            {
+                logger.Info("Creating monitor instance");
                 instance = new Monitor(credentials, streamers, api);
-            else Console.WriteLine("Already connected");
+            }
+            else
+            {
+                logger.Info("Getting monitor instance");
+            }
             return instance;
         }
 
         private void Inititalize(TwitchAPI api)
         {
+            logger.Info("Inititalizing monitor");
             var userIds = new List<string>();
             foreach (var streamer in streamers)
                 userIds.Add(api.Users.v5.GetUserByNameAsync(streamer.twitch_username).Result.Matches[0].Id);
@@ -51,7 +60,7 @@ namespace VkStreamNotifier
 
         private async void OnStreamOffline(object sender, OnStreamOfflineArgs e)
         {
-            Console.WriteLine($"{DateTime.Now} {e.Channel} ended stream\r");
+            logger.Info($"{DateTime.Now} {e.Channel} ended stream\r");
             var current = DateTime.Now;
             vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended = current;
             var result = await SettingsWorker.UpdateDowntimeAsync(current, e.Channel);
@@ -61,31 +70,37 @@ namespace VkStreamNotifier
         private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"{DateTime.Now} Monitor ended");
+            logger.Warn($"Monitor ended");
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
-        private void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
+        private async void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
         {
-            Console.WriteLine($"{DateTime.Now} Monitor started");
+            logger.Info($"Monitor started");
             Console.WriteLine($"Current offline streams amount: {monitor.CurrentOfflineStreams.Count}");
             Console.WriteLine($"Current live streams amount: {monitor.CurrentLiveStreams.Count}");
+            foreach (var streamer in streamers)
+            {
+                vkList.Add(new VK(credentials, streamer));
+                await vkList.Last().ConnectAsync();
+            }
         }
 
         private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
-            Console.WriteLine($"{DateTime.Now} {e.Channel} started stream\r");
+            logger.Info($"{DateTime.Now} {e.Channel} started stream\r");
             lock (locker)
             {
-                if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) < DateTime.Now)
+                if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) > DateTime.Now)
                 {
+                    logger.Info($"No drops, sending notification");
                     var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
-                    vk.SendNotify();
+                    vk.Notify();
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
+                    logger.Warn($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
                     Console.ForegroundColor = ConsoleColor.Gray;
                 }
             }

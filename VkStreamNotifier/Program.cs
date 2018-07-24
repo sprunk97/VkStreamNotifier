@@ -5,7 +5,7 @@ using CrashReporter;
 using VkStreamNotifier.Schemes;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Windows.Input;
+using NLog;
 
 namespace VkStreamNotifier
 {
@@ -21,6 +21,15 @@ namespace VkStreamNotifier
         {
             AppDomain currentDomain = AppDomain.CurrentDomain;
             currentDomain.UnhandledException += new UnhandledExceptionEventHandler(GlobalExceptionHandler);
+
+            var config = new NLog.Config.LoggingConfiguration();
+            var logfile = new NLog.Targets.FileTarget("logfile") { FileName = "NLog.txt" };
+            var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, logconsole);
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
+            LogManager.Configuration = config;
+            var log = LogManager.GetCurrentClassLogger();
+            log.Info("\r\n\tSTARTED");
 
             if (args.Length != 0 && args.Contains("-lc"))
             {
@@ -62,6 +71,8 @@ namespace VkStreamNotifier
 
         static void GlobalExceptionHandler(object sender, UnhandledExceptionEventArgs args)
         {
+            var logger = LogManager.GetCurrentClassLogger();
+
             Exception e = (Exception)args.ExceptionObject;
             NetworkCredential networkCredential = new NetworkCredential(credential.email, credential.email_password);
             var mail = new Sender(networkCredential, "sprunk97@gmail.com", "VkStreamNotifier Exception", null, null);
@@ -71,8 +82,11 @@ namespace VkStreamNotifier
             }
             catch (Exception exc)
             {
-                Console.WriteLine(exc.Message);
+                logger.Error("Error sending crash report");
+                logger.Trace(exc);
             }
+
+            logger.Info("Sent crash trace over email");
         }
 
         static async Task Load()
@@ -112,7 +126,6 @@ namespace VkStreamNotifier
                 if (result?.ModifiedCount > 0)
                     Console.WriteLine($"{streamer.twitch_username}: updated ending time");
             }
-            Console.WriteLine("Updated");
         }
     }
 }
