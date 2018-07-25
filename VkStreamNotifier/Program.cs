@@ -34,33 +34,39 @@ namespace VkStreamNotifier
             if (args.Length != 0 && args.Contains("-lc"))
             {
                 await Load();
-                Connect();
+                await Connect();
             }
 
             Console.WriteLine("Commands: load, connect, update, help, exit");
+            await CallMenu();
+            Console.ReadKey();
+        }
+
+        public static async Task CallMenu()
+        {
             do
             {
                 switch (Console.ReadLine())
                 {
                     case "exit":
                         Environment.Exit(0);
-                        break;
+                        return;
                     case "load":
                         await Load();
-                        break;
+                        return;
                     case "connect":
-                        Connect();
-                        break;
+                        await Connect();
+                        return;
                     case "update":
                         await UpdateEndings();
-                        break;
+                        return;
                     case "help":
                         Console.WriteLine("Commands: load, connect, update, help, exit");
-                        break;
+                        return;
                     case "":
                         Console.Clear();
                         Console.WriteLine("Commands: load, connect, update, help, exit");
-                        break;
+                        return;
                     default:
                         Console.WriteLine("Unrecognized command. Use help");
                         break;
@@ -89,7 +95,7 @@ namespace VkStreamNotifier
             logger.Info("Sent crash trace over email");
         }
 
-        static async Task Load()
+        private static async Task Load()
         {
             var credentials = await SettingsWorker.GetCredentialsAsync();
             credential = credentials.Last();
@@ -108,12 +114,16 @@ namespace VkStreamNotifier
                     Console.WriteLine($"{property.Name} : {property.GetValue(streamer, null)}");
                 Console.WriteLine();
             }
+            await CallMenu();
+            Console.ReadKey();
         }
 
-        static void Connect()
+        private static async Task Connect()
         {
             var twitch = new Twitch(credential, streamers);
             twitch.CreateConnection();
+            await CallMenu();
+            Console.ReadKey();
         }
 
         static async Task UpdateEndings()
@@ -126,6 +136,8 @@ namespace VkStreamNotifier
                 if (result?.ModifiedCount > 0)
                     Console.WriteLine($"{streamer.twitch_username}: updated ending time");
             }
+            await CallMenu();
+            Console.ReadKey();
         }
     }
 }
