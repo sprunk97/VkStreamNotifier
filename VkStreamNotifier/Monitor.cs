@@ -89,20 +89,18 @@ namespace VkStreamNotifier
         private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
             logger.Info($"{DateTime.Now} {e.Channel} started stream\r");
-            lock (locker)
+
+            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) < DateTime.Now)
             {
-                if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) > DateTime.Now)
-                {
-                    logger.Info($"No drops, sending notification");
-                    var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
-                    vk.Notify();
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    logger.Warn($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                }
+                logger.Info($"No drops, sending notification");
+                var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
+                vk.Notify();
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                logger.Warn($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
         }
     }
