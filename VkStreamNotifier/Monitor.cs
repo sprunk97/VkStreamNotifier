@@ -16,6 +16,7 @@ namespace VkStreamNotifier
         private readonly Credentials credentials;
         private static Monitor instance;
         private readonly List<VK> vkList = new List<VK>();
+        private object locker = new object();
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public Monitor() { }
@@ -64,17 +65,13 @@ namespace VkStreamNotifier
             vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended = current;
             var result = await SettingsWorker.UpdateDowntimeAsync(current, e.Channel);
             Console.WriteLine($"Found: {result.MatchedCount}. Updated: {result.ModifiedCount}");
-            await Program.CallMenu();
-            Console.ReadKey();
         }
 
-        private async void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
+        private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             logger.Warn($"Monitor ended");
             Console.ForegroundColor = ConsoleColor.Gray;
-            await Program.CallMenu();
-            Console.ReadKey();
         }
 
         private async void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
@@ -87,28 +84,26 @@ namespace VkStreamNotifier
                 vkList.Add(new VK(credentials, streamer));
                 await vkList.Last().ConnectAsync();
             }
-            await Program.CallMenu();
-            Console.ReadKey();
         }
 
-        private async void OnStreamOnline(object sender, OnStreamOnlineArgs e)
+        private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
             logger.Info($"{DateTime.Now} {e.Channel} started stream\r");
-
-            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddMinutes(30) < DateTime.Now)
+            lock (locker)
             {
-                logger.Info($"No drops, sending notification");
-                var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
-                vk.Notify();
+                if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) > DateTime.Now)
+                {
+                    logger.Info($"No drops, sending notification");
+                    var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
+                    vk.Notify();
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    logger.Warn($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                }
             }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                logger.Warn($"Seems like {e.Channel}'s stream dropped in last hour. Notification supressed");
-                Console.ForegroundColor = ConsoleColor.Gray;
-            }
-            await Program.CallMenu();
-            Console.ReadKey();
         }
     }
 }
