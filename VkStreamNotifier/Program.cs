@@ -57,10 +57,6 @@ namespace VkStreamNotifier
                     case "help":
                         Console.WriteLine("Commands: load, connect, update, help, exit");
                         break;
-                    case "":
-                        Console.Clear();
-                        Console.WriteLine("Commands: load, connect, update, help, exit");
-                        break;
                     default:
                         Console.WriteLine("Unrecognized command. Use help");
                         break;

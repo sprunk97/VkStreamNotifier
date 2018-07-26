@@ -14,7 +14,7 @@ namespace VkStreamNotifier
     {
         private const string path = "https://broadcast.vkforms.ru/api/v2/broadcast?token=";
         private static Logger log = LogManager.GetCurrentClassLogger();
-        private readonly VkApi api = new VkApi();
+        private readonly VkApi api = new VkApi(LogManager.CreateNullLogger());
         private readonly Schemes.Credentials credentials;
         public Schemes.Streamer streamer;
 
@@ -30,6 +30,7 @@ namespace VkStreamNotifier
         /// </summary>
         public async Task ConnectAsync()
         {
+            log.Info("Authorizing VK");
             api.OnTokenExpires += new VkApiDelegate(OnTokenExpired);
             await api.AuthorizeAsync(new ApiAuthParams
             {
@@ -37,6 +38,8 @@ namespace VkStreamNotifier
                 Settings = VkNet.Enums.Filters.Settings.All,
                 AccessToken = streamer.vk_app_token
             });
+            if(!api.IsAuthorized)
+                log.Error("Authorizing failed");
         }
 
         private async void OnTokenExpired(VkApi sender)
