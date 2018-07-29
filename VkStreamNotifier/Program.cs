@@ -3,7 +3,6 @@ using System.Net;
 using System.Linq;
 using CrashReporter;
 using VkStreamNotifier.Schemes;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using NLog;
 
@@ -89,21 +88,11 @@ namespace VkStreamNotifier
         {
             var credentials = SettingsWorker.GetCredentials();
             credential = credentials.Last();
-
-            Console.WriteLine("\tCurrent credentials:");
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
-            foreach (var property in typeof(Credentials).GetProperties())
-                Console.WriteLine($"{property.Name} : {property.GetValue(credential, null)}");
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine();
+            Console.WriteLine("\tCredentials loaded");
 
             streamers = SettingsWorker.GetStreamersList();
             foreach (var streamer in streamers)
-            {
-                foreach (var property in typeof(Streamer).GetProperties())
-                    Console.WriteLine($"{property.Name} : {property.GetValue(streamer, null)}");
-                Console.WriteLine();
-            }
+                Console.WriteLine($"Streamer : {streamer.twitch_username} : loaded");
         }
 
         static void Connect()
