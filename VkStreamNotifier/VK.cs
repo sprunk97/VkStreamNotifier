@@ -28,11 +28,11 @@ namespace VkStreamNotifier
         /// <summary>
         /// Authorizing VK api
         /// </summary>
-        public async Task ConnectAsync()
+        public void Connect()
         {
             log.Info("Authorizing VK");
             api.OnTokenExpires += new VkApiDelegate(OnTokenExpired);
-            await api.AuthorizeAsync(new ApiAuthParams
+            api.Authorize(new ApiAuthParams
             {
                 ApplicationId = ulong.Parse(credentials.vk_app_id),
                 Settings = VkNet.Enums.Filters.Settings.All,
@@ -42,12 +42,12 @@ namespace VkStreamNotifier
                 log.Error("Authorizing failed");
         }
 
-        private async void OnTokenExpired(VkApi sender)
+        private void OnTokenExpired(VkApi sender)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             log.Error("VK token expired!");
             Console.ForegroundColor = ConsoleColor.Gray;
-            await ConnectAsync();
+            Connect();
         }
 
         /// <summary>

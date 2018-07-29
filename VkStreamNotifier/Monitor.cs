@@ -16,7 +16,6 @@ namespace VkStreamNotifier
         private readonly Credentials credentials;
         private static Monitor instance;
         private readonly List<VK> vkList = new List<VK>();
-        private object locker = new object();
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public Monitor() { }
@@ -58,13 +57,13 @@ namespace VkStreamNotifier
             monitor.StartService();
         }
 
-        private async void OnStreamOffline(object sender, OnStreamOfflineArgs e)
+        private void OnStreamOffline(object sender, OnStreamOfflineArgs e)
         {
-            logger.Info($"{DateTime.Now} {e.Channel} ended stream\r");
             var current = DateTime.Now;
+            logger.Info($"{current} {e.Channel} ended stream\r");
             vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended = current;
-            var result = await SettingsWorker.UpdateDowntimeAsync(current, e.Channel);
-            Console.WriteLine($"Found: {result.MatchedCount}. Updated: {result.ModifiedCount}");
+            SettingsWorker.UpdateDowntime(current, e.Channel);
+            Console.WriteLine($"Updated date when {e.Channel} went offline: {current.ToString()}");
         }
 
         private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
@@ -74,7 +73,7 @@ namespace VkStreamNotifier
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
-        private async void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
+        private void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
         {
             logger.Info($"Monitor started");
             Console.WriteLine($"Current offline streams amount: {monitor.CurrentOfflineStreams.Count}");
@@ -82,7 +81,7 @@ namespace VkStreamNotifier
             foreach (var streamer in streamers)
             {
                 vkList.Add(new VK(credentials, streamer));
-                await vkList.Last().ConnectAsync();
+                vkList.Last().Connect();
             }
         }
 

@@ -17,7 +17,7 @@ namespace VkStreamNotifier
         #endregion
 
         [STAThread]
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
             AppDomain currentDomain = AppDomain.CurrentDomain;
             currentDomain.UnhandledException += new UnhandledExceptionEventHandler(GlobalExceptionHandler);
@@ -33,7 +33,7 @@ namespace VkStreamNotifier
 
             if (args.Length != 0 && args.Contains("-lc"))
             {
-                await Load();
+                Load();
                 Connect();
             }
 
@@ -46,13 +46,13 @@ namespace VkStreamNotifier
                         Environment.Exit(0);
                         break;
                     case "load":
-                        await Load();
+                        Load();
                         break;
                     case "connect":
                         Connect();
                         break;
                     case "update":
-                        await UpdateEndings();
+                        UpdateEndings();
                         break;
                     case "help":
                         Console.WriteLine("Commands: load, connect, update, help, exit");
@@ -85,9 +85,9 @@ namespace VkStreamNotifier
             logger.Info("Sent crash trace over email");
         }
 
-        static async Task Load()
+        static void Load()
         {
-            var credentials = await SettingsWorker.GetCredentialsAsync();
+            var credentials = SettingsWorker.GetCredentials();
             credential = credentials.Last();
 
             Console.WriteLine("\tCurrent credentials:");
@@ -97,7 +97,7 @@ namespace VkStreamNotifier
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine();
 
-            streamers = await SettingsWorker.GetStreamersListAsync();
+            streamers = SettingsWorker.GetStreamersList();
             foreach (var streamer in streamers)
             {
                 foreach (var property in typeof(Streamer).GetProperties())
@@ -112,15 +112,15 @@ namespace VkStreamNotifier
             twitch.CreateConnection();
         }
 
-        static async Task UpdateEndings()
+        static void UpdateEndings()
         {
-            MongoDB.Driver.UpdateResult result = null;
             foreach (var streamer in streamers)
             {
                 if (streamer.stream_ended == null)
-                    result = await SettingsWorker.UpdateDowntimeAsync(DateTime.Now, streamer.twitch_username);
-                if (result?.ModifiedCount > 0)
+                {
+                    SettingsWorker.UpdateDowntime(DateTime.Now, streamer.twitch_username);
                     Console.WriteLine($"{streamer.twitch_username}: updated ending time");
+                }
             }
         }
     }

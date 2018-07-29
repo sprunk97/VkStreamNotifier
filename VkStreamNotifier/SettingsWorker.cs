@@ -17,7 +17,7 @@ namespace VkStreamNotifier
         /// Returns list of streamers info
         /// </summary>
         /// <returns></returns>
-        public static async Task<List<Streamer>> GetStreamersListAsync()
+        public static List<Streamer> GetStreamersList()
         {
             log.Info("Conecting to DB");
             MongoClient client = new MongoClient("mongodb://localhost:27017");
@@ -26,7 +26,7 @@ namespace VkStreamNotifier
 
             log.Info("Serializing streamer class");
             List<Streamer> streamers = new List<Streamer>();
-            var rawStreamersInfo = await collection.Find(new BsonDocument()).ToListAsync();
+            var rawStreamersInfo = collection.Find(new BsonDocument()).ToList();
             foreach (var doc in rawStreamersInfo)
                 streamers.Add(BsonSerializer.Deserialize<Streamer>(doc));
             return streamers;
@@ -36,7 +36,7 @@ namespace VkStreamNotifier
         /// Returns list of application credentials
         /// </summary>
         /// <returns></returns>
-        public static async Task<List<Credentials>> GetCredentialsAsync()
+        public static List<Credentials> GetCredentials()
         {
             log.Info("Conecting to DB");
             MongoClient client = new MongoClient("mongodb://localhost:27017");
@@ -45,10 +45,9 @@ namespace VkStreamNotifier
 
             log.Info("Serializing credentials class");
             List<Credentials> credentials = new List<Credentials>();
-            var rawCredentials = await collection.Find(new BsonDocument()).ToListAsync();
+            var rawCredentials = collection.Find(new BsonDocument()).ToList();
             foreach (var doc in rawCredentials)
                 credentials.Add(BsonSerializer.Deserialize<Credentials>(doc));
-
             return credentials;
         }
 
@@ -58,7 +57,7 @@ namespace VkStreamNotifier
         /// <param name="stream_ended"></param>
         /// <param name="twitch_username"></param>
         /// <returns></returns>
-        public static async Task<UpdateResult> UpdateDowntimeAsync(DateTime stream_ended, string twitch_username)
+        public static void UpdateDowntime(DateTime stream_ended, string twitch_username)
         {
             log.Info("Conecting to DB");
             MongoClient client = new MongoClient("mongodb://localhost:27017");
@@ -68,8 +67,7 @@ namespace VkStreamNotifier
             log.Info("Updating ending dates");
             var filter = Builders<Streamer>.Filter.Eq("twitch_username", twitch_username);
             var update = Builders<Streamer>.Update.Set(x => x.stream_ended, stream_ended);
-            var result = await collection.UpdateOneAsync(filter, update);
-            return result;
+            collection.UpdateOne(filter, update);
         }
     }
 }
