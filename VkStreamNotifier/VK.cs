@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NLog;
 using VkNet;
@@ -30,7 +29,7 @@ namespace VkStreamNotifier
         /// </summary>
         public void Connect()
         {
-            log.Info("Authorizing VK");
+            log.Info($"Authorizing VK for {streamer.twitch_username}");
             api.OnTokenExpires += new VkApiDelegate(OnTokenExpired);
             api.Authorize(new ApiAuthParams
             {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -19,7 +18,7 @@ namespace VkStreamNotifier
         /// <returns></returns>
         public static List<Streamer> GetStreamersList()
         {
-            log.Info("Conecting to DB");
+            log.Info("Getting streamers");
             MongoClient client = new MongoClient("mongodb://localhost:27017");
             var database = client.GetDatabase("notifier");
             var collection = database.GetCollection<BsonDocument>("streamers");
@@ -38,7 +37,7 @@ namespace VkStreamNotifier
         /// <returns></returns>
         public static List<Credentials> GetCredentials()
         {
-            log.Info("Conecting to DB");
+            log.Info("Getting credentials");
             MongoClient client = new MongoClient("mongodb://localhost:27017");
             var database = client.GetDatabase("notifier");
             var collection = database.GetCollection<BsonDocument>("credentials");
@@ -59,12 +58,11 @@ namespace VkStreamNotifier
         /// <returns></returns>
         public static void UpdateDowntime(DateTime stream_ended, string twitch_username)
         {
-            log.Info("Conecting to DB");
+            log.Info("Updating downtime");
             MongoClient client = new MongoClient("mongodb://localhost:27017");
             var database = client.GetDatabase("notifier");
             var collection = database.GetCollection<Streamer>("streamers");
 
-            log.Info("Updating ending dates");
             var filter = Builders<Streamer>.Filter.Eq("twitch_username", twitch_username);
             var update = Builders<Streamer>.Update.Set(x => x.stream_ended, stream_ended);
             collection.UpdateOne(filter, update);
