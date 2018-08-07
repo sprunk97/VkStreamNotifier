@@ -14,6 +14,12 @@ namespace VkStreamNotifier.Schemes
         [BsonElement("twitch_id")]
         public string twitch_id { get; set; }
 
+        [BsonElement("irc_username")]
+        public string irc_username { get; set; }
+
+        [BsonElement("irc_token")]
+        public string irc_token { get; set; }
+
         [BsonElement("twitch_token")]
         public string twitch_token { get; set; }
 
