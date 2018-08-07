@@ -18,7 +18,7 @@ namespace VkStreamNotifier
         private readonly List<VK> vkList = new List<VK>();
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public Monitor() { }
+        protected Monitor() { }
         protected Monitor(Credentials credentials, List<Streamer> streamers, TwitchAPI api)
         {
             this.streamers = streamers;
@@ -55,6 +55,18 @@ namespace VkStreamNotifier
 
             monitor.SetStreamsByUserId(userIds);
             monitor.StartService();
+        }
+
+        /// <summary>
+        /// Ends monitor and calls dispose method for VK
+        /// </summary>
+        public static void EndMonitor()
+        {
+            instance.monitor.StopService();
+            foreach (var streamer in instance.streamers)
+            {
+                instance.vkList.Find(x => x.streamer.twitch_username == streamer.twitch_username).Drop();
+            }
         }
 
         private void OnStreamOffline(object sender, OnStreamOfflineArgs e)

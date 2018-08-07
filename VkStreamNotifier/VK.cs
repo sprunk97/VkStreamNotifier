@@ -41,6 +41,15 @@ namespace VkStreamNotifier
                 log.Error("Authorizing failed");
         }
 
+        /// <summary>
+        /// Disposes api
+        /// </summary>
+        public void Drop()
+        {
+            log.Warn($"Disposing api: {streamer.twitch_username}");
+            api.Dispose();
+        }
+
         private void OnTokenExpired(VkApi sender)
         {
             Console.ForegroundColor = ConsoleColor.Red;
