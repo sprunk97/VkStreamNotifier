@@ -29,12 +29,16 @@ namespace VkStreamNotifier
             LogManager.Configuration = config;
             var log = LogManager.GetCurrentClassLogger();
             log.Info("\r\n\tSTARTED");
-
+#if DEBUG
+            Load();
+            Connect();
+#else
             if (args.Length != 0 && args.Contains("-lc"))
             {
                 Load();
                 Connect();
             }
+#endif
 
             Console.WriteLine("Commands: load, connect, update, help, exit");
             do
