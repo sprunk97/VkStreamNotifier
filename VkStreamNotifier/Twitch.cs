@@ -50,6 +50,7 @@ namespace VkStreamNotifier
             api.Settings.AccessToken = credentials.twitch_token;
             
             Monitor.GetInstance(credentials, streamers, api);
+            Monitor.StartMonitor();
         }
     }
 }

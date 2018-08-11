@@ -54,7 +54,14 @@ namespace VkStreamNotifier
             monitor.OnStreamMonitorEnded += new EventHandler<OnStreamMonitorEndedArgs>(OnMonitorEnded);
 
             monitor.SetStreamsByUserId(userIds);
-            monitor.StartService();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void StartMonitor()
+        {
+            instance.monitor.StartService();
         }
 
         /// <summary>
