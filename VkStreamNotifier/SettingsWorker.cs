@@ -67,5 +67,22 @@ namespace VkStreamNotifier
             var update = Builders<Streamer>.Update.Set(x => x.stream_ended, stream_ended);
             collection.UpdateOne(filter, update);
         }
+
+        /// <summary>
+        /// Updates date when last notification was sent
+        /// </summary>
+        /// <param name="stream_ended"></param>
+        /// <param name="twitch_username"></param>
+        public static void UpdateLastNotificationDate(DateTime notification_sent, string twitch_username)
+        {
+            log.Info("Updating last notification date");
+            MongoClient client = new MongoClient("mongodb://localhost:27017");
+            var database = client.GetDatabase("notifier");
+            var collection = database.GetCollection<Streamer>("streamers");
+
+            var filter = Builders<Streamer>.Filter.Eq("twitch_username", twitch_username);
+            var update = Builders<Streamer>.Update.Set(x => x.stream_ended, notification_sent);
+            collection.UpdateOne(filter, update);
+        }
     }
 }

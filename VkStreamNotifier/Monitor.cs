@@ -74,6 +74,7 @@ namespace VkStreamNotifier
             {
                 instance.vkList.Find(x => x.streamer.twitch_username == streamer.twitch_username).Drop();
             }
+            StartMonitor();
         }
 
         private void OnStreamOffline(object sender, OnStreamOfflineArgs e)
@@ -108,11 +109,13 @@ namespace VkStreamNotifier
         {
             logger.Info($"{DateTime.Now} {e.Channel} started stream\r");
 
-            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) < DateTime.Now)
+            if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) < DateTime.Now &&
+                vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.notification_sent.ToLocalTime().AddHours(1) < DateTime.Now)
             {
                 logger.Info($"No drops, sending notification");
                 var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
                 vk.Notify();
+                SettingsWorker.UpdateLastNotificationDate(DateTime.Now, e.Channel);
             }
             else
             {

@@ -30,5 +30,9 @@ namespace VkStreamNotifier.Schemes
         [BsonElement("stream_ended")]
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime stream_ended { get; set; }
+
+        [BsonElement("notification_sent")]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime notification_sent { get; set; }
     }
 }
