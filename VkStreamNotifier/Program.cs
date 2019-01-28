@@ -73,6 +73,7 @@ namespace VkStreamNotifier
             var logger = LogManager.GetCurrentClassLogger();
 
             Exception e = (Exception)args.ExceptionObject;
+            logger.Error(e.ToString());
             NetworkCredential networkCredential = new NetworkCredential(credential.email, credential.email_password);
             var mail = new Sender(networkCredential, "sprunk97@gmail.com", "VkStreamNotifier Exception", null, null);
             try

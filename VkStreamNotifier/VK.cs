@@ -13,7 +13,7 @@ namespace VkStreamNotifier
     {
         private const string path = "https://broadcast.vkforms.ru/api/v2/broadcast?token=";
         private static Logger log = LogManager.GetCurrentClassLogger();
-        private readonly VkApi api = new VkApi(LogManager.CreateNullLogger());
+        private readonly VkApi api = new VkApi();
         private readonly Schemes.Credentials credentials;
         public Schemes.Streamer streamer;
 

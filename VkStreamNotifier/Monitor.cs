@@ -5,13 +5,14 @@ using System.Linq;
 using TwitchLib.Api;
 using TwitchLib.Api.Services;
 using TwitchLib.Api.Services.Events.LiveStreamMonitor;
+using TwitchLib.Api.Services.Events;
 using VkStreamNotifier.Schemes;
 
 namespace VkStreamNotifier
 {
     class Monitor
     {
-        private LiveStreamMonitor monitor;
+        private LiveStreamMonitorService monitor;
         private readonly List<Streamer> streamers;
         private readonly Credentials credentials;
         private static Monitor instance;
@@ -44,16 +45,21 @@ namespace VkStreamNotifier
         {
             logger.Info("Inititalizing monitor");
             var userIds = new List<string>();
-            foreach (var streamer in streamers)
-                userIds.Add(api.Users.v5.GetUserByNameAsync(streamer.twitch_username).Result.Matches[0].Id);
 
-            monitor = new LiveStreamMonitor(api, 60, true, false);
+            monitor = new LiveStreamMonitorService(api);
+            monitor.OnServiceTick += Monitor_OnServiceTick;
             monitor.OnStreamOnline += new EventHandler<OnStreamOnlineArgs>(OnStreamOnline);
             monitor.OnStreamOffline += new EventHandler<OnStreamOfflineArgs>(OnStreamOffline);
-            monitor.OnStreamMonitorStarted += new EventHandler<OnStreamMonitorStartedArgs>(OnMonitorStarted);
-            monitor.OnStreamMonitorEnded += new EventHandler<OnStreamMonitorEndedArgs>(OnMonitorEnded);
+            monitor.OnServiceStarted += new EventHandler<OnServiceStartedArgs>(OnMonitorStartedAsync);
+            monitor.OnServiceStopped += new EventHandler<OnServiceStoppedArgs>(OnMonitorEnded);
 
-            monitor.SetStreamsByUserId(userIds);
+            monitor.SetChannelsByName(streamers.Select(x => x.twitch_username).ToList());
+        }
+
+        private void Monitor_OnServiceTick(object sender, OnServiceTickArgs e)
+        {
+            Console.WriteLine($"Current live streams amount: {monitor.LiveStreams.Count}");
+            Console.WriteLine($"Total streams amount: {monitor.ChannelsToMonitor.Count}");
         }
 
         /// <summary>
@@ -61,7 +67,7 @@ namespace VkStreamNotifier
         /// </summary>
         public static void StartMonitor()
         {
-            instance.monitor.StartService();
+            instance.monitor.Start();
         }
 
         /// <summary>
@@ -69,7 +75,7 @@ namespace VkStreamNotifier
         /// </summary>
         public static void EndMonitor()
         {
-            instance.monitor.StopService();
+            instance.monitor.Stop();
             foreach (var streamer in instance.streamers)
             {
                 instance.vkList.Find(x => x.streamer.twitch_username == streamer.twitch_username).Drop();
@@ -86,18 +92,19 @@ namespace VkStreamNotifier
             Console.WriteLine($"Updated date when {e.Channel} went offline: {current.ToString()}");
         }
 
-        private void OnMonitorEnded(object sender, OnStreamMonitorEndedArgs e)
+        private void OnMonitorEnded(object sender, OnServiceStoppedArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             logger.Warn($"Monitor ended");
             Console.ForegroundColor = ConsoleColor.Gray;
         }
 
-        private void OnMonitorStarted(object sender, OnStreamMonitorStartedArgs e)
+        private async void OnMonitorStartedAsync(object sender, OnServiceStartedArgs e)
         {
             logger.Info($"Monitor started");
-            Console.WriteLine($"Current offline streams amount: {monitor.CurrentOfflineStreams.Count}");
-            Console.WriteLine($"Current live streams amount: {monitor.CurrentLiveStreams.Count}");
+            await monitor.UpdateLiveStreamersAsync(false);
+            Console.WriteLine($"Current live streams amount: {monitor.LiveStreams.Count}");
+            Console.WriteLine($"Total streams amount: {monitor.ChannelsToMonitor.Count}");
             foreach (var streamer in streamers)
             {
                 vkList.Add(new VK(credentials, streamer));

@@ -32,11 +32,11 @@ namespace VkStreamNotifier
             ConnectionCredentials credentialConnection = new ConnectionCredentials(credentials.irc_username, credentials.irc_token);
             client.Initialize(credentialConnection, credentials.irc_username);
             client.OnConnected += Client_OnConnected;
-            client.OnDisconnected += Client_OnDisconnected;
+            client.OnDisconnected += Client_OnDisconnected;// new EventHandler<TwitchLib.Client.Events.OnDisconnectedArgs> (Client_OnDisconnected);
             client.Connect();
         }
 
-        private void Client_OnDisconnected(object sender, TwitchLib.Client.Events.OnDisconnectedArgs e)
+        private void Client_OnDisconnected(object sender, TwitchLib.Communication.Events.OnDisconnectedEventArgs e)
         {
             log.Warn("IRC client disconnected");
             Monitor.EndMonitor();
