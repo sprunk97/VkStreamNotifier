@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Linq;
-using CrashReporter;
 using VkStreamNotifier.Schemes;
 using System.Collections.Generic;
 using NLog;
@@ -71,22 +70,10 @@ namespace VkStreamNotifier
         static void GlobalExceptionHandler(object sender, UnhandledExceptionEventArgs args)
         {
             var logger = LogManager.GetCurrentClassLogger();
-
             Exception e = (Exception)args.ExceptionObject;
             logger.Error(e.ToString());
-            NetworkCredential networkCredential = new NetworkCredential(credential.email, credential.email_password);
-            var mail = new Sender(networkCredential, "sprunk97@gmail.com", "VkStreamNotifier Exception", null, null);
-            try
-            {
-                mail.SendReport(e);
-            }
-            catch (Exception exc)
-            {
-                logger.Error("Error sending crash report");
-                logger.Trace(exc);
-            }
-
-            logger.Info("Sent crash trace over email");
+            logger.Info("Restarting");
+            Main(new string[] { "-lc" });
         }
 
         static void Load()

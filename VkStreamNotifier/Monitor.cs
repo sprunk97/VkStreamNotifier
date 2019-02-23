@@ -47,19 +47,12 @@ namespace VkStreamNotifier
             var userIds = new List<string>();
 
             monitor = new LiveStreamMonitorService(api);
-            monitor.OnServiceTick += Monitor_OnServiceTick;
             monitor.OnStreamOnline += new EventHandler<OnStreamOnlineArgs>(OnStreamOnline);
             monitor.OnStreamOffline += new EventHandler<OnStreamOfflineArgs>(OnStreamOffline);
             monitor.OnServiceStarted += new EventHandler<OnServiceStartedArgs>(OnMonitorStartedAsync);
             monitor.OnServiceStopped += new EventHandler<OnServiceStoppedArgs>(OnMonitorEnded);
 
             monitor.SetChannelsByName(streamers.Select(x => x.twitch_username).ToList());
-        }
-
-        private void Monitor_OnServiceTick(object sender, OnServiceTickArgs e)
-        {
-            Console.WriteLine($"Current live streams amount: {monitor.LiveStreams.Count}");
-            Console.WriteLine($"Total streams amount: {monitor.ChannelsToMonitor.Count}");
         }
 
         /// <summary>
@@ -114,6 +107,8 @@ namespace VkStreamNotifier
 
         private void OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
+            Console.WriteLine($"Current live streams amount: {monitor.LiveStreams.Count}");
+            Console.WriteLine($"Total streams amount: {monitor.ChannelsToMonitor.Count}");
             logger.Info($"{DateTime.Now} {e.Channel} started stream\r");
 
             if (vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel)).streamer.stream_ended.ToLocalTime().AddHours(1) < DateTime.Now &&
