@@ -81,7 +81,7 @@ namespace VkStreamNotifier
             var collection = database.GetCollection<Streamer>("streamers");
 
             var filter = Builders<Streamer>.Filter.Eq("twitch_username", twitch_username);
-            var update = Builders<Streamer>.Update.Set(x => x.stream_ended, notification_sent);
+            var update = Builders<Streamer>.Update.Set(x => x.notification_sent, notification_sent);
             collection.UpdateOne(filter, update);
         }
     }
