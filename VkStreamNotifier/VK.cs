@@ -66,7 +66,7 @@ namespace VkStreamNotifier
         {
             Schemes.NotifyMessage message = new Schemes.NotifyMessage()
             {
-                message = new Schemes.Message() { message = $"{streamer.message} - {title}" },
+                message = new Schemes.Message() { message = $"{streamer.message} + {title}" },
                 list_ids = streamer.list_ids,
                 run_now = "1",
                 access_token = streamer.vk_app_token
