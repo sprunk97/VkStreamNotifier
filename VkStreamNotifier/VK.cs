@@ -62,11 +62,11 @@ namespace VkStreamNotifier
         /// Returns string in json
         /// </summary>
         /// <returns></returns>
-        public string CreateJson()
+        public string CreateJson(string title)
         {
             Schemes.NotifyMessage message = new Schemes.NotifyMessage()
             {
-                message = new Schemes.Message() { message = streamer.message },
+                message = new Schemes.Message() { message = $"{streamer.message} + {title}" },
                 list_ids = streamer.list_ids,
                 run_now = "1",
                 access_token = streamer.vk_app_token
@@ -77,14 +77,14 @@ namespace VkStreamNotifier
         /// <summary>
         /// Performs POST request to VK server
         /// </summary>
-        public void Notify()
+        public void Notify(string title)
         {
             log.Info("Sending notification");
             WebRequest request = WebRequest.Create(path + streamer.vk_api_token);
             request.Method = "POST";
             request.ContentType = "application/json";
 
-            var json = CreateJson();
+            var json = CreateJson(title);
 
             byte[] byteArray = Encoding.UTF8.GetBytes(json);
             request.ContentLength = byteArray.Length;

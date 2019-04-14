@@ -116,7 +116,7 @@ namespace VkStreamNotifier
             {
                 logger.Info($"No drops, sending notification");
                 var vk = vkList.Find(x => x.streamer.twitch_username.Equals(e.Channel));
-                vk.Notify();
+                vk.Notify(e.Stream.Title);
                 SettingsWorker.UpdateLastNotificationDate(DateTime.Now, e.Channel);
             }
             else
